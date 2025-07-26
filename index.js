@@ -1,5 +1,6 @@
 import { CdpClient } from "@coinbase/cdp-sdk"
 import dotenv from "dotenv"
+import ProgressBar from "progress"
 
 dotenv.config({ quiet: true })
 
@@ -13,12 +14,11 @@ async function request(address, token) {
   })
 }
 
-const address = process.argv[2]
+const tasks = [...Array(10).fill("usdc"), ...Array(30).fill("eth")]
 
-for (let i = 0; i < 10; i++) {
-  await request(address, "usdc")
-}
+const bar = new ProgressBar("[:bar] :current/:total", { total: tasks.length })
 
-for (let i = 0; i < 50; i++) {
-  await request(address, "eth")
+for (const token of tasks) {
+  await request(process.env.ADDRESS, token)
+  bar.tick()
 }
