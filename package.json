@@ -1,0 +1,15 @@
+{
+  "name": "faucet",
+  "scripts": {
+    "request": "node index.js"
+  },
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@coinbase/cdp-sdk": "^1.30.0",
+    "dotenv": "^17.2.1"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}
