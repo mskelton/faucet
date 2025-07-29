@@ -6,6 +6,10 @@ dotenv.config({ quiet: true })
 
 const cdp = new CdpClient()
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 async function request(address, token) {
   try {
     await cdp.evm.requestFaucet({
@@ -17,7 +21,12 @@ async function request(address, token) {
     return true
   } catch (error) {
     if (error.errorType === "faucet_limit_exceeded") {
-      return false
+      return "limit_exceeded"
+    }
+
+    if (error.errorType === "network_connection_failed") {
+      process.stderr.write("network connection failed, retrying...")
+      return "network_connection_failed"
     }
 
     throw error
@@ -25,7 +34,7 @@ async function request(address, token) {
 }
 
 const USDC = 10
-const ETH = 30
+const ETH = 50
 
 const bar = new ProgressBar("[:bar] :current/:total", {
   total: USDC + ETH,
@@ -33,15 +42,15 @@ const bar = new ProgressBar("[:bar] :current/:total", {
 
 async function requestMultipleTimes(token, count) {
   for (let i = 0; i < count; i++) {
-    const success = await request(process.env.ADDRESS, token)
+    const response = await request(process.env.ADDRESS, token)
 
-    if (!success) {
+    if (response === "limit_exceeded") {
       console.log(`${token.toUpperCase()} limit exceeded`)
       bar.tick(count - i)
       return
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await sleep(1000)
     bar.tick()
   }
 }
